@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wallet_unsaac/core/config/firebase_status.dart';
 import 'package:wallet_unsaac/core/theme/app_theme.dart';
 import 'package:wallet_unsaac/core/theme/theme_cubit.dart';
+import 'package:wallet_unsaac/core/theme/theme_preferences.dart';
 import 'package:wallet_unsaac/core/theme/theme_state.dart';
 import 'package:wallet_unsaac/features/wallet/data/repositories/in_memory_wallet_repository.dart';
 import 'package:wallet_unsaac/features/wallet/domain/repositories/wallet_repository.dart';
@@ -19,9 +20,21 @@ import 'package:wallet_unsaac/features/wallet/presentation/pages/wallet_home_pag
 /// cambia el modo claro/oscuro. Es el primer flujo evento → estado → interfaz
 /// del curso.
 class WalletApp extends StatelessWidget {
-  const WalletApp({super.key, required this.firebaseStatus});
+  const WalletApp({
+    super.key,
+    required this.firebaseStatus,
+    this.themePreferences,
+    this.initialThemeMode = ThemeMode.system,
+  });
 
   final FirebaseStatus firebaseStatus;
+
+  /// Almacenamiento del tema (Reto 1). Es opcional para que las pruebas de
+  /// widget puedan construir la app sin `shared_preferences`.
+  final ThemePreferences? themePreferences;
+
+  /// Modo leído en `main()` antes de `runApp`.
+  final ThemeMode initialThemeMode;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +45,10 @@ class WalletApp extends StatelessWidget {
         ),
       ],
       child: BlocProvider(
-        create: (_) => ThemeCubit(),
+        create: (_) => ThemeCubit(
+          initialMode: initialThemeMode,
+          preferences: themePreferences,
+        ),
         child: BlocBuilder<ThemeCubit, ThemeState>(
           builder: (context, themeState) {
             return MaterialApp(

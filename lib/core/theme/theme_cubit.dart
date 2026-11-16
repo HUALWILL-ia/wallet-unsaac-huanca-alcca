@@ -1,23 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wallet_unsaac/core/theme/theme_preferences.dart';
 import 'package:wallet_unsaac/core/theme/theme_state.dart';
 
-/// `Cubit` que gobierna el tema claro/oscuro.
+/// `Cubit` que gobierna el tema de la aplicación.
 ///
-/// Un Cubit es un BLoC sin eventos explícitos: la interfaz invoca métodos y el
-/// Cubit emite estados. Es la opción recomendada cuando la lógica es simple y
-/// no requiere trazabilidad de eventos.
+/// Reto 1: recorre los modos claro → oscuro → sistema → claro y guarda cada
+/// cambio mediante [ThemePreferences]. La lectura inicial no ocurre aquí, sino
+/// en `main()` antes de `runApp`, y llega como [initialMode].
 class ThemeCubit extends Cubit<ThemeState> {
-  ThemeCubit({ThemeMode initialMode = ThemeMode.system})
-    : super(ThemeState(mode: initialMode));
+  ThemeCubit({
+    ThemeMode initialMode = ThemeMode.system,
+    ThemePreferences? preferences,
+  }) : _preferences = preferences,
+       super(ThemeState(mode: initialMode));
 
-  /// Alterna entre claro y oscuro. Si el estado actual es `system`, el primer
-  /// toque lleva a oscuro para que el cambio sea perceptible.
-  void toggle() {
-    emit(state.copyWith(mode: state.isDark ? ThemeMode.light : ThemeMode.dark));
+  final ThemePreferences? _preferences;
+
+  /// Avanza al siguiente modo del ciclo y lo guarda.
+  Future<void> toggle() => setMode(state.nextMode);
+
+  /// Emite el modo pedido y lo persiste de inmediato.
+  Future<void> setMode(ThemeMode mode) async {
+    emit(state.copyWith(mode: mode));
+    await _preferences?.saveMode(mode);
   }
 
-  void setMode(ThemeMode mode) => emit(state.copyWith(mode: mode));
-
-  void useSystemMode() => setMode(ThemeMode.system);
+  Future<void> useSystemMode() => setMode(ThemeMode.system);
 }

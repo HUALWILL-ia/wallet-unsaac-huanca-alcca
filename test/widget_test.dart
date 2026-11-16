@@ -25,7 +25,7 @@ void main() {
     expect(find.text('Firebase: no configurado (modo local)'), findsOneWidget);
   });
 
-  testWidgets('el botón de tema alterna MaterialApp a modo oscuro', (
+  testWidgets('el botón de tema recorre claro → oscuro → sistema', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -38,10 +38,20 @@ void main() {
 
     expect(app().themeMode, ThemeMode.system);
 
-    await tester.tap(find.byTooltip('Activar tema oscuro'));
+    await tester.tap(
+      find.byTooltip('Tema del sistema. Cambiar a tema claro'),
+    );
     await tester.pumpAndSettle();
+    expect(app().themeMode, ThemeMode.light);
 
+    await tester.tap(find.byTooltip('Tema claro. Cambiar a tema oscuro'));
+    await tester.pumpAndSettle();
     expect(app().themeMode, ThemeMode.dark);
-    expect(find.byTooltip('Activar tema claro'), findsOneWidget);
+
+    await tester.tap(
+      find.byTooltip('Tema oscuro. Cambiar a tema del sistema'),
+    );
+    await tester.pumpAndSettle();
+    expect(app().themeMode, ThemeMode.system);
   });
 }

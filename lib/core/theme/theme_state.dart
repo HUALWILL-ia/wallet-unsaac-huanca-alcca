@@ -13,6 +13,13 @@ class ThemeState extends Equatable {
 
   bool get isDark => mode == ThemeMode.dark;
 
+  /// Siguiente modo del ciclo: claro → oscuro → sistema → claro.
+  ThemeMode get nextMode => switch (mode) {
+    ThemeMode.light => ThemeMode.dark,
+    ThemeMode.dark => ThemeMode.system,
+    ThemeMode.system => ThemeMode.light,
+  };
+
   ThemeState copyWith({ThemeMode? mode}) => ThemeState(mode: mode ?? this.mode);
 
   @override

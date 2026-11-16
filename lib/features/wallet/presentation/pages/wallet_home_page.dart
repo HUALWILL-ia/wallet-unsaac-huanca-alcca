@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wallet_unsaac/core/config/firebase_status.dart';
 import 'package:wallet_unsaac/core/theme/theme_cubit.dart';
+import 'package:wallet_unsaac/core/theme/theme_state.dart';
 import 'package:wallet_unsaac/features/wallet/domain/entities/wallet_summary.dart';
 import 'package:wallet_unsaac/features/wallet/domain/repositories/wallet_repository.dart';
 import 'package:wallet_unsaac/features/wallet/presentation/widgets/balance_card.dart';
@@ -56,7 +57,6 @@ class _WalletHomePageState extends State<WalletHomePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -75,13 +75,7 @@ class _WalletHomePageState extends State<WalletHomePage> {
           ],
         ),
         actions: [
-          IconButton(
-            tooltip: isDark ? 'Activar tema claro' : 'Activar tema oscuro',
-            icon: Icon(
-              isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-            ),
-            onPressed: () => context.read<ThemeCubit>().toggle(),
-          ),
+          const _ThemeModeButton(),
           const SizedBox(width: 8),
         ],
       ),
@@ -178,6 +172,39 @@ class _WalletHomePageState extends State<WalletHomePage> {
           );
         },
       ),
+    );
+  }
+}
+
+/// Botón del tema (Reto 1). El icono y el tooltip reflejan el modo actual y
+/// anuncian el siguiente del ciclo claro → oscuro → sistema → claro.
+class _ThemeModeButton extends StatelessWidget {
+  const _ThemeModeButton();
+
+  static String _label(ThemeMode mode) => switch (mode) {
+    ThemeMode.light => 'claro',
+    ThemeMode.dark => 'oscuro',
+    ThemeMode.system => 'del sistema',
+  };
+
+  static IconData _icon(ThemeMode mode) => switch (mode) {
+    ThemeMode.light => Icons.light_mode_outlined,
+    ThemeMode.dark => Icons.dark_mode_outlined,
+    ThemeMode.system => Icons.brightness_auto_outlined,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ThemeCubit, ThemeState>(
+      builder: (context, state) {
+        return IconButton(
+          tooltip:
+              'Tema ${_label(state.mode)}. '
+              'Cambiar a tema ${_label(state.nextMode)}',
+          icon: Icon(_icon(state.mode)),
+          onPressed: () => context.read<ThemeCubit>().toggle(),
+        );
+      },
     );
   }
 }

@@ -18,15 +18,17 @@ void main() {
     });
 
     blocTest<ThemeCubit, ThemeState>(
-      'toggle alterna de oscuro a claro y viceversa',
+      'toggle recorre sistema → claro → oscuro → sistema',
       build: ThemeCubit.new,
-      act: (cubit) {
-        cubit.toggle();
-        cubit.toggle();
+      act: (cubit) async {
+        await cubit.toggle();
+        await cubit.toggle();
+        await cubit.toggle();
       },
       expect: () => const [
-        ThemeState(mode: ThemeMode.dark),
         ThemeState(mode: ThemeMode.light),
+        ThemeState(mode: ThemeMode.dark),
+        ThemeState(mode: ThemeMode.system),
       ],
     );
 
