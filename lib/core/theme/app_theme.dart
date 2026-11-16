@@ -9,13 +9,16 @@ import 'package:flutter/material.dart';
 abstract final class AppTheme {
   static const Color seed = Color(0xFF7A1F2B);
 
-  static ThemeData light() => _build(Brightness.light);
+  /// Reto 4: ambos temas reciben el color semilla elegido por el usuario.
+  static ThemeData light([Color seedColor = seed]) =>
+      _build(seedColor, Brightness.light);
 
-  static ThemeData dark() => _build(Brightness.dark);
+  static ThemeData dark([Color seedColor = seed]) =>
+      _build(seedColor, Brightness.dark);
 
-  static ThemeData _build(Brightness brightness) {
+  static ThemeData _build(Color seedColor, Brightness brightness) {
     final scheme = ColorScheme.fromSeed(
-      seedColor: seed,
+      seedColor: seedColor,
       brightness: brightness,
     );
 

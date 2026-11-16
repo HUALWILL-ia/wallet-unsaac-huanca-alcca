@@ -74,8 +74,8 @@ class WalletApp extends StatelessWidget {
             return MaterialApp(
               title: 'Wallet UNSAAC',
               debugShowCheckedModeBanner: false,
-              theme: AppTheme.light(),
-              darkTheme: AppTheme.dark(),
+              theme: AppTheme.light(themeState.seedColor),
+              darkTheme: AppTheme.dark(themeState.seedColor),
               themeMode: themeState.mode,
               home: WalletHomePage(firebaseStatus: firebaseStatus),
             );

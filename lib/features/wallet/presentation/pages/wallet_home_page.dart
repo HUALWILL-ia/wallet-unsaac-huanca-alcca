@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wallet_unsaac/core/config/firebase_status.dart';
+import 'package:wallet_unsaac/core/theme/seed_colors.dart';
 import 'package:wallet_unsaac/core/theme/theme_cubit.dart';
 import 'package:wallet_unsaac/core/theme/theme_state.dart';
 import 'package:wallet_unsaac/features/wallet/domain/entities/wallet_summary.dart';
@@ -41,7 +42,15 @@ class WalletHomePage extends StatelessWidget {
             ),
           ],
         ),
-        actions: const [_ThemeModeButton(), SizedBox(width: 8)],
+        actions: [
+          IconButton(
+            tooltip: 'Cambiar color del tema',
+            icon: const Icon(Icons.palette_outlined),
+            onPressed: () => _showSeedColorPicker(context),
+          ),
+          const _ThemeModeButton(),
+          const SizedBox(width: 8),
+        ],
       ),
       body: BlocBuilder<BalanceCubit, BalanceState>(
         builder: (context, state) => switch (state) {
@@ -56,6 +65,81 @@ class WalletHomePage extends StatelessWidget {
           ),
         },
       ),
+    );
+  }
+}
+
+/// Reto 4: hoja inferior con los colores semilla disponibles.
+void _showSeedColorPicker(BuildContext context) {
+  showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (sheetContext) => Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Color del tema',
+            style: Theme.of(sheetContext).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 16,
+            runSpacing: 16,
+            children: [
+              for (final option in kSeedColorOptions)
+                _SeedColorSwatch(option: option),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// Círculo de un color semilla. Solo el indicador de selección se reconstruye
+/// gracias a `BlocSelector`: cambiar el modo claro/oscuro no lo afecta.
+class _SeedColorSwatch extends StatelessWidget {
+  const _SeedColorSwatch({required this.option});
+
+  final SeedColorOption option;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<ThemeCubit, ThemeState, bool>(
+      selector: (state) => state.seedColor == option.color,
+      builder: (context, selected) {
+        final borderColor = selected
+            ? Theme.of(context).colorScheme.onSurface
+            : Colors.transparent;
+        return Tooltip(
+          message: option.name,
+          child: Semantics(
+            button: true,
+            selected: selected,
+            label: 'Color ${option.name}',
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () =>
+                  context.read<ThemeCubit>().setSeedColor(option.color),
+              child: Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: option.color,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: borderColor, width: 3),
+                ),
+                child: selected
+                    ? const Icon(Icons.check_rounded, color: Colors.white)
+                    : null,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
