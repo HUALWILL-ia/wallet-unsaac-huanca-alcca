@@ -31,10 +31,10 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'REEMPLAZAR_API_KEY',
-    appId: 'REEMPLAZAR_APP_ID',
-    messagingSenderId: 'REEMPLAZAR_MESSAGING_SENDER_ID',
-    projectId: 'REEMPLAZAR_PROJECT_ID',
-    storageBucket: 'REEMPLAZAR_PROJECT_ID.firebasestorage.app',
+    apiKey: 'AIzaSyBrlqAGZdUtsSMzQokd9chG6KLQYglluGQ',
+    appId: '1:1051167575652:android:57d24710fa5348c666d971',
+    messagingSenderId: '1051167575652',
+    projectId: 'pro-sylph-463700-a2',
+    storageBucket: 'pro-sylph-463700-a2.firebasestorage.app',
   );
 }
