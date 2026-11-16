@@ -7,6 +7,7 @@ import 'package:wallet_unsaac/core/theme/theme_preferences.dart';
 import 'package:wallet_unsaac/core/theme/theme_state.dart';
 import 'package:wallet_unsaac/features/wallet/data/repositories/in_memory_wallet_repository.dart';
 import 'package:wallet_unsaac/features/wallet/domain/repositories/wallet_repository.dart';
+import 'package:wallet_unsaac/features/wallet/presentation/cubit/balance_cubit.dart';
 import 'package:wallet_unsaac/features/wallet/presentation/cubit/privacy_cubit.dart';
 import 'package:wallet_unsaac/features/wallet/presentation/pages/wallet_home_page.dart';
 
@@ -17,6 +18,7 @@ import 'package:wallet_unsaac/features/wallet/presentation/pages/wallet_home_pag
 ///   cualquier pantalla o bloc.
 /// - `BlocProvider<ThemeCubit>`: estado global del tema.
 /// - `BlocProvider<PrivacyCubit>`: ocultar/mostrar importes (Reto 2).
+/// - `BlocProvider<BalanceCubit>`: carga del resumen con estados (Reto 3).
 ///
 /// `BlocBuilder` escucha el `ThemeCubit` y reconstruye `MaterialApp` cuando
 /// cambia el modo claro/oscuro. Es el primer flujo evento → estado → interfaz
@@ -27,6 +29,7 @@ class WalletApp extends StatelessWidget {
     required this.firebaseStatus,
     this.themePreferences,
     this.initialThemeMode = ThemeMode.system,
+    this.walletRepository,
   });
 
   final FirebaseStatus firebaseStatus;
@@ -38,12 +41,15 @@ class WalletApp extends StatelessWidget {
   /// Modo leído en `main()` antes de `runApp`.
   final ThemeMode initialThemeMode;
 
+  /// Repositorio inyectable (Reto 3). Si es nulo se usa el de memoria.
+  final WalletRepository? walletRepository;
+
   @override
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider<WalletRepository>(
-          create: (_) => InMemoryWalletRepository(),
+          create: (_) => walletRepository ?? InMemoryWalletRepository(),
         ),
       ],
       child: MultiBlocProvider(
@@ -56,6 +62,12 @@ class WalletApp extends StatelessWidget {
           ),
           // Reto 2: privacidad de importes, estado de presentación.
           BlocProvider(create: (_) => PrivacyCubit()),
+          // Reto 3: el Cubit recibe el repositorio por constructor y la
+          // carga empieza al crearlo.
+          BlocProvider(
+            create: (context) =>
+                BalanceCubit(context.read<WalletRepository>())..load(),
+          ),
         ],
         child: BlocBuilder<ThemeCubit, ThemeState>(
           builder: (context, themeState) {

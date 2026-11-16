@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:wallet_unsaac/app.dart';
 import 'package:wallet_unsaac/core/config/firebase_bootstrap.dart';
 import 'package:wallet_unsaac/core/theme/theme_preferences.dart';
+import 'package:wallet_unsaac/features/wallet/data/repositories/flaky_wallet_repository.dart';
+import 'package:wallet_unsaac/features/wallet/data/repositories/in_memory_wallet_repository.dart';
+
+/// Reto 3: `flutter run --dart-define=SIMULAR_ERROR=true` hace que la primera
+/// carga falle y que la latencia sea mayor, para capturar carga, error y
+/// reintento en el emulador.
+const bool _simulateError = bool.fromEnvironment('SIMULAR_ERROR');
 
 /// Punto de entrada de Wallet UNSAAC.
 ///
@@ -18,11 +25,17 @@ Future<void> main() async {
   final firebaseStatus = await FirebaseBootstrap.initialize();
   final themePreferences = await SharedPrefsThemePreferences.create();
   final initialThemeMode = await themePreferences.loadMode();
+  final walletRepository = _simulateError
+      ? FlakyWalletRepository(
+          InMemoryWalletRepository(latency: const Duration(seconds: 3)),
+        )
+      : InMemoryWalletRepository();
   runApp(
     WalletApp(
       firebaseStatus: firebaseStatus,
       themePreferences: themePreferences,
       initialThemeMode: initialThemeMode,
+      walletRepository: walletRepository,
     ),
   );
 }
