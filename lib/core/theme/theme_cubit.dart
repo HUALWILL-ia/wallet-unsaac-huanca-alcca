@@ -9,11 +9,8 @@ import 'package:wallet_unsaac/core/theme/theme_state.dart';
 /// cambio mediante [ThemePreferences]. La lectura inicial no ocurre aquí, sino
 /// en `main()` antes de `runApp`, y llega como [initialMode].
 class ThemeCubit extends Cubit<ThemeState> {
-  ThemeCubit({
-    ThemeMode initialMode = ThemeMode.system,
-    ThemePreferences? preferences,
-  }) : _preferences = preferences,
-       super(ThemeState(mode: initialMode));
+    ThemeCubit({ThemeMode initialMode = ThemeMode.system, this._preferences})
+    : super(ThemeState(mode: initialMode));
 
   final ThemePreferences? _preferences;
 
