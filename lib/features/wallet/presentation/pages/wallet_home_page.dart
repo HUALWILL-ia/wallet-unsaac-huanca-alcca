@@ -5,6 +5,8 @@ import 'package:wallet_unsaac/core/theme/theme_cubit.dart';
 import 'package:wallet_unsaac/core/theme/theme_state.dart';
 import 'package:wallet_unsaac/features/wallet/domain/entities/wallet_summary.dart';
 import 'package:wallet_unsaac/features/wallet/domain/repositories/wallet_repository.dart';
+import 'package:wallet_unsaac/features/wallet/presentation/cubit/privacy_cubit.dart';
+import 'package:wallet_unsaac/features/wallet/presentation/cubit/privacy_state.dart';
 import 'package:wallet_unsaac/features/wallet/presentation/widgets/balance_card.dart';
 import 'package:wallet_unsaac/features/wallet/presentation/widgets/firebase_status_card.dart';
 import 'package:wallet_unsaac/features/wallet/presentation/widgets/movement_tile.dart';
@@ -93,81 +95,93 @@ class _WalletHomePageState extends State<WalletHomePage> {
           }
 
           final summary = snapshot.data!;
-          return RefreshIndicator(
-            onRefresh: _reload,
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-              children: [
-                Text(
-                  'Hola, estudiante UNSAAC',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
+          // Reto 2: la lista escucha al PrivacyCubit; los datos del resumen
+          // no cambian, solo cómo se muestran.
+          return BlocBuilder<PrivacyCubit, PrivacyState>(
+            builder: (context, privacy) => RefreshIndicator(
+              onRefresh: _reload,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+                children: [
+                  Text(
+                    'Hola, estudiante UNSAAC',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Este es el resumen de tus finanzas en noviembre de 2026.',
-                  style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
-                ),
-                const SizedBox(height: 20),
-                BalanceCard(summary: summary),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: FilledButton.tonalIcon(
-                        onPressed: () => _showComingSoon('Registrar ingreso'),
-                        icon: const Icon(Icons.add_rounded),
-                        label: const Text('Ingreso'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _showComingSoon('Registrar egreso'),
-                        icon: const Icon(Icons.remove_rounded),
-                        label: const Text('Egreso'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 28),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Últimos movimientos',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
+                  const SizedBox(height: 4),
+                  Text(
+                    'Este es el resumen de tus finanzas en noviembre de 2026.',
+                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 20),
+                  BalanceCard(
+                    summary: summary,
+                    hideBalance: privacy.hidden,
+                    onToggleVisibility: () =>
+                        context.read<PrivacyCubit>().toggle(),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FilledButton.tonalIcon(
+                          onPressed: () => _showComingSoon('Registrar ingreso'),
+                          icon: const Icon(Icons.add_rounded),
+                          label: const Text('Ingreso'),
                         ),
                       ),
-                    ),
-                    TextButton(
-                      onPressed: () => _showComingSoon('El historial completo'),
-                      child: const Text('Ver todos'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                if (summary.isEmpty)
-                  const _EmptyMovements()
-                else
-                  for (final movement in summary.movements) ...[
-                    MovementTile(movement: movement),
-                    const SizedBox(height: 10),
-                  ],
-                const SizedBox(height: 12),
-                FirebaseStatusCard(status: widget.firebaseStatus),
-                const SizedBox(height: 16),
-                Center(
-                  child: Text(
-                    'Datos de demostración · Wallet UNSAAC 1.0.0',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _showComingSoon('Registrar egreso'),
+                          icon: const Icon(Icons.remove_rounded),
+                          label: const Text('Egreso'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Últimos movimientos',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => _showComingSoon('El historial completo'),
+                        child: const Text('Ver todos'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  if (summary.isEmpty)
+                    const _EmptyMovements()
+                  else
+                    for (final movement in summary.movements) ...[
+                      MovementTile(
+                        movement: movement,
+                        hideAmount: privacy.hidden,
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                  const SizedBox(height: 12),
+                  FirebaseStatusCard(status: widget.firebaseStatus),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: Text(
+                      'Datos de demostración · Wallet UNSAAC 1.0.0',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },

@@ -1,12 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:wallet_unsaac/core/utils/money.dart';
 import 'package:wallet_unsaac/features/wallet/domain/entities/wallet_summary.dart';
+import 'package:wallet_unsaac/features/wallet/presentation/widgets/masked_amount.dart';
 
 /// Tarjeta principal con el saldo y los totales del mes.
+///
+/// Reto 2: la tarjeta no decide si oculta los importes. Recibe [hideBalance]
+/// y avisa con [onToggleVisibility] cuando el usuario pulsa el ojo.
 class BalanceCard extends StatelessWidget {
-  const BalanceCard({super.key, required this.summary});
+  const BalanceCard({
+    super.key,
+    required this.summary,
+    this.hideBalance = false,
+    this.onToggleVisibility,
+  });
 
   final WalletSummary summary;
+  final bool hideBalance;
+  final VoidCallback? onToggleVisibility;
+
+  String _amount(double value) =>
+      hideBalance ? kMaskedAmount : MoneyFormat.soles(value);
 
   @override
   Widget build(BuildContext context) {
@@ -42,14 +56,28 @@ class BalanceCard extends StatelessWidget {
                 color: onPrimaryMuted,
               ),
               const SizedBox(width: 8),
-              Text(
-                'Saldo disponible',
-                style: TextStyle(
-                  color: onPrimaryMuted,
-                  fontSize: 14,
-                  letterSpacing: 0.2,
+              Expanded(
+                child: Text(
+                  'Saldo disponible',
+                  style: TextStyle(
+                    color: onPrimaryMuted,
+                    fontSize: 14,
+                    letterSpacing: 0.2,
+                  ),
                 ),
               ),
+              if (onToggleVisibility != null)
+                IconButton(
+                  tooltip: hideBalance ? 'Mostrar saldo' : 'Ocultar saldo',
+                  color: scheme.onPrimary,
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(
+                    hideBalance
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                  ),
+                  onPressed: onToggleVisibility,
+                ),
             ],
           ),
           const SizedBox(height: 12),
@@ -57,7 +85,8 @@ class BalanceCard extends StatelessWidget {
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(
-              MoneyFormat.soles(summary.balance),
+              _amount(summary.balance),
+              semanticsLabel: hideBalance ? kMaskedSemantics : null,
               style: TextStyle(
                 color: scheme.onPrimary,
                 fontSize: 36,
@@ -75,7 +104,7 @@ class BalanceCard extends StatelessWidget {
                 child: _BalanceMetric(
                   icon: Icons.south_west_rounded,
                   label: 'Ingresos',
-                  value: MoneyFormat.soles(summary.income),
+                  value: _amount(summary.income),
                   color: scheme.onPrimary,
                   mutedColor: onPrimaryMuted,
                 ),
@@ -90,7 +119,7 @@ class BalanceCard extends StatelessWidget {
                 child: _BalanceMetric(
                   icon: Icons.north_east_rounded,
                   label: 'Egresos',
-                  value: MoneyFormat.soles(summary.expenses),
+                  value: _amount(summary.expenses),
                   color: scheme.onPrimary,
                   mutedColor: onPrimaryMuted,
                 ),

@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:wallet_unsaac/core/utils/money.dart';
 import 'package:wallet_unsaac/features/wallet/domain/entities/movement.dart';
+import 'package:wallet_unsaac/features/wallet/presentation/widgets/masked_amount.dart';
 
 /// Fila de un movimiento financiero.
 class MovementTile extends StatelessWidget {
-  const MovementTile({super.key, required this.movement});
+  const MovementTile({
+    super.key,
+    required this.movement,
+    this.hideAmount = false,
+  });
 
   final Movement movement;
+
+  /// Reto 2: si es `true`, el importe se enmascara.
+  final bool hideAmount;
 
   static const Color _incomeLight = Color(0xFF2E7D32);
   static const Color _incomeDark = Color(0xFF81C784);
@@ -44,7 +52,11 @@ class MovementTile extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
         trailing: Text(
-          '${movement.isIncome ? '+' : '-'} ${MoneyFormat.soles(movement.amount)}',
+          hideAmount
+              ? kMaskedAmount
+              : '${movement.isIncome ? '+' : '-'} '
+                    '${MoneyFormat.soles(movement.amount)}',
+          semanticsLabel: hideAmount ? kMaskedSemantics : null,
           style: TextStyle(color: accent, fontWeight: FontWeight.w600),
         ),
       ),
